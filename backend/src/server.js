@@ -28,8 +28,22 @@ process.on('unhandledRejection', (err) => {
 
 connectDB();
 
+// CORS Configuration
+const corsOptions = {
+  origin: [
+    'http://localhost:5173', // Vite default dev server
+    'http://localhost:3000', // Common React dev server
+    'https://e-commerce-website-flax-seven.vercel.app', // Production frontend
+    'https://e-commerce-frontend-*.vercel.app', // Wildcard for Vercel preview deployments
+    'https://e-commerce-backend-website.vercel.app' // Previous frontend URL (keep for backward compatibility)
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes

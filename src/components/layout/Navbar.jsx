@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { FaShoppingCart, FaUser, FaSearch, FaBars, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
+import ThemeToggle from '../ui/ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
@@ -90,6 +91,7 @@ const Navbar = () => {
         
         {/* Navigation Icons */}
         <div className="flex items-center space-x-4">
+              <ThemeToggle />
           <Link to="/search" className="text-gray-700 hover:text-indigo-600">
             <FaSearch className="text-lg" />
           </Link>
@@ -107,12 +109,12 @@ const Navbar = () => {
           <div className="relative">
             <button 
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center space-x-2 text-gray-700 hover:text-indigo-600"
+              className="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-indigo-50 hover:bg-indigo-100 text-indigo-700 hover:text-indigo-800 transition-colors duration-200"
             >
-              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200">
                 <FaUserCircle className="text-xl text-indigo-600" />
               </div>
-              <span className="hidden md:inline">{currentUser.name}</span>
+              <span className="hidden md:inline font-medium">{currentUser.name}</span>
             </button>
             
             {isProfileOpen && (
@@ -139,13 +141,21 @@ const Navbar = () => {
             )}
           </div>
         ) : (
-          <Link
-            to="/login"
-            className="flex items-center space-x-1 text-gray-700 hover:text-indigo-600"
-          >
-            <FaUser className="text-lg" />
-            <span className="hidden md:inline">Sign In</span>
-          </Link>
+          <div className="flex items-center space-x-3">
+            <Link
+              to="/register"
+              className="px-4 py-2 text-sm font-medium text-indigo-700 hover:text-indigo-800 hover:bg-indigo-50 rounded-md transition-colors duration-200"
+            >
+              Register
+            </Link>
+            <Link
+              to="/login"
+              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors duration-200 flex items-center space-x-2 shadow-sm hover:shadow"
+            >
+              <FaUser className="text-sm" />
+              <span>Sign In</span>
+            </Link>
+          </div>
         )}
       </div>
       

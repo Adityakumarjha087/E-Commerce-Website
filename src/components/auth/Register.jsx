@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { FiUser, FiMail, FiLock, FiArrowLeft } from 'react-icons/fi';
+import { FaGoogle, FaGithub } from 'react-icons/fa';
 import styles from '../../styles/auth.module.css';
 
 const Register = () => {
@@ -44,117 +46,126 @@ const Register = () => {
 
   return (
     <div className={styles.authContainer}>
-      <div className={styles.authCard}>
-        <div className={styles.authHeader}>
-          <h1 className={styles.authTitle}>Create Account</h1>
-          <p className={styles.authSubtitle}>
-            Already have an account?{' '}
-            <Link to="/login" className={styles.authLink}>
-              Sign in
-            </Link>
-          </p>
+      {/* Left Side - Image/Branding */}
+      <div className={styles.authImageContainer}>
+        <div className={styles.authImageContent}>
+          <h1>Join Our Community</h1>
+          <p>Create an account to start your shopping journey with exclusive deals and personalized recommendations.</p>
         </div>
-        
-        {error && (
-          <div className={styles.errorMessage} role="alert">
-            {error}
-          </div>
-        )}
+      </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className={styles.formGroup}>
-            <label htmlFor="name" className={styles.formLabel}>
-              Full Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              autoComplete="name"
-              required
-              className={styles.formInput}
-              placeholder="John Doe"
-              value={name}
-              onChange={handleChange}
-            />
+      {/* Right Side - Form */}
+      <div className={styles.authFormContainer}>
+        <div className={styles.authCard}>
+          <div className={styles.authHeader}>
+            <h1 className={styles.authTitle}>Create Account</h1>
+            <p className={styles.authSubtitle}>
+              Already have an account?{' '}
+              <Link to="/login" className={styles.authLink}>
+                Sign in <FiArrowLeft style={{ verticalAlign: 'middle', transform: 'rotate(180deg)' }} />
+              </Link>
+            </p>
           </div>
           
-          <div className={styles.formGroup}>
-            <label htmlFor="email" className={styles.formLabel}>
-              Email Address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              className={styles.formInput}
-              placeholder="you@example.com"
-              value={email}
-              onChange={handleChange}
-            />
-          </div>
-          
-          <div className={styles.formGroup}>
-            <label htmlFor="password" className={styles.formLabel}>
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              className={styles.formInput}
-              placeholder="••••••••"
-              value={password}
-              onChange={handleChange}
-            />
-            <div className={styles.passwordStrength}>
-              <div 
-                className={styles.passwordStrengthBar}
-                style={{
-                  width: password.length > 0 
-                    ? (password.length < 6 
-                        ? '33%' 
-                        : (password.length < 10 ? '66%' : '100%'))
-                    : '0%',
-                  backgroundColor: password.length > 0
-                    ? (password.length < 6 
-                        ? '#ef4444' 
-                        : (password.length < 10 ? '#f59e0b' : '#10b981'))
-                    : 'transparent'
-                }}
-              />
+          {error && (
+            <div className={styles.errorMessage} role="alert">
+              {error}
             </div>
-          </div>
-          
-          <div className={styles.formGroup}>
-            <label htmlFor="confirmPassword" className={styles.formLabel}>
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              required
-              className={`${styles.formInput} ${confirmPassword && password !== confirmPassword ? 'border-red-500' : ''}`}
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={handleChange}
-            />
-            {confirmPassword && password !== confirmPassword && (
-              <p className="mt-1 text-sm text-red-600">Passwords don't match</p>
-            )}
-          </div>
+          )}
 
-          <div className={styles.formGroup} style={{ marginTop: '2rem' }}>
+          <form onSubmit={handleSubmit}>
+            <div className={styles.formGroup}>
+              <div className="relative">
+                <FiUser className={styles.inputIcon} />
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  className={styles.formInput}
+                  placeholder="Full name"
+                  value={name}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            
+            <div className={styles.formGroup}>
+              <div className="relative">
+                <FiMail className={styles.inputIcon} />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  className={styles.formInput}
+                  placeholder="Email address"
+                  value={email}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            
+            <div className={styles.formGroup}>
+              <div className="relative">
+                <FiLock className={styles.inputIcon} />
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  className={styles.formInput}
+                  placeholder="Password"
+                  value={password}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className={styles.passwordStrength}>
+                <div 
+                  className={styles.passwordStrengthBar}
+                  style={{
+                    width: password.length > 0 
+                      ? (password.length < 6 
+                          ? '33%' 
+                          : (password.length < 10 ? '66%' : '100%'))
+                      : '0%',
+                    backgroundColor: password.length > 0
+                      ? (password.length < 6 
+                          ? '#ef4444' 
+                          : (password.length < 10 ? '#f59e0b' : '#10b981'))
+                      : 'transparent'
+                  }}
+                />
+              </div>
+            </div>
+            
+            <div className={styles.formGroup}>
+              <div className="relative">
+                <FiLock className={styles.inputIcon} />
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  className={`${styles.formInput} ${confirmPassword && password !== confirmPassword ? '!border-red-500' : ''}`}
+                  placeholder="Confirm password"
+                  value={confirmPassword}
+                  onChange={handleChange}
+                />
+              </div>
+              {confirmPassword && password !== confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">Passwords don't match</p>
+              )}
+            </div>
+            
             <button
               type="submit"
-              disabled={loading}
               className={styles.submitButton}
+              disabled={loading}
             >
               {loading ? (
                 <>
@@ -163,8 +174,21 @@ const Register = () => {
                 </>
               ) : 'Create Account'}
             </button>
-          </div>
-        </form>
+            
+            <div className={styles.divider}>
+              <span>or sign up with</span>
+            </div>
+            
+            <div className={styles.socialButtons}>
+              <button type="button" className={styles.socialButton}>
+                <FaGoogle className="mr-2" /> Google
+              </button>
+              <button type="button" className={styles.socialButton}>
+                <FaGithub className="mr-2" /> GitHub
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

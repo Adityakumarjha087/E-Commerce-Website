@@ -3,6 +3,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext.jsx';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
@@ -146,12 +147,12 @@ const AppContent = () => {
   );
 }
 
-function App() {
-  return (
+const App = () => (
+  <ThemeProvider>
     <AuthProvider>
       <AppContent />
     </AuthProvider>
-  );
-}
+  </ThemeProvider>
+);
 
 export default App;
