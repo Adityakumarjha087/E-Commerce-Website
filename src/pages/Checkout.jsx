@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearCart } from '../store/slices/cartSlice';
@@ -10,6 +10,7 @@ import {
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { API_ENDPOINTS } from '../config';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -26,11 +27,31 @@ const Checkout = () => {
     }
   }, [items, navigate, orderSuccess]);
   
-  const handleOrderSuccess = () => {
+  const handleOrderSuccess = (details) => {
     const newOrderNumber = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
     setOrderNumber(newOrderNumber);
     setOrderSuccess(true);
     dispatch(clearCart());
+    
+    // Here you would typically send the order details to your backend
+    const orderData = {
+      orderId: newOrderNumber,
+      transactionId: details.id,
+      amount: totalAmount,
+      items: items,
+      status: 'completed',
+      paymentMethod: 'PayPal'
+    };
+    
+    // Example API call to save the order
+    // axios.post(`${import.meta.env.VITE_API_URL}/orders`, orderData)
+    //   .then(() => {
+    //     toast.success('Order placed successfully!');
+    //   })
+    //   .catch((error) => {
+    //     console.error('Error saving order:', error);
+    //     toast.error('Error saving order details');
+    //   });
   };
   
   const handleSetProcessing = (processing) => {
@@ -89,85 +110,195 @@ const Checkout = () => {
     );
   }
   
+  const [paypalError, setPaypalError] = useState(false);
+  const [sdkReady, setSdkReady] = useState(false);
+
+  // Load the PayPal SDK
+  useEffect(() => {
+    const addPayPalScript = () => {
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = `https://www.paypal.com/sdk/js?client-id=${import.meta.env.VITE_PAYPAL_CLIENT_ID}&currency=USD`;
+      script.async = true;
+      script.onload = () => setSdkReady(true);
+      script.onerror = () => {
+        setPaypalError(true);
+        toast.error('Failed to load PayPal. Please refresh the page.');
+      };
+      document.body.appendChild(script);
+    };
+
+    if (window.paypal) {
+      setSdkReady(true);
+    } else {
+      addPayPalScript();
+    }
+
+    return () => {
+      // Cleanup
+      const scriptElements = document.querySelectorAll('script[src*="paypal.com"]');
+      scriptElements.forEach(script => script.remove());
+    };
+  }, []);
+
   return (
     <PayPalScriptProvider 
       options={{ 
-        "client-id": import.meta.env.VITE_APP_PAYPAL_CLIENT_ID || '',
-        currency: "USD",
-        intent: "capture",
-        components: "buttons"
+        'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID,
+        components: 'buttons',
+        currency: 'USD',
+        'disable-funding': 'credit,card',
+        'data-sdk-integration-source': 'integrationbuilder_sc'
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
-          <div className="lg:col-span-1">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h2>
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <form>
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Contact information</h3>
-                    <div className="mt-1">
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                        placeholder="Email address"
-                      />
-                    </div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="md:grid md:grid-cols-3 md:gap-8">
+            {/* Checkout Form */}
+            <div className="md:col-span-2">
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+                {orderSuccess ? (
+                  <div className="text-center py-12">
+                    <FaCheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Order Placed Successfully!</h2>
+                    <p className="text-gray-600 dark:text-gray-300 mb-6">Your order number is: {orderNumber}</p>
+                    <p className="text-gray-600 dark:text-gray-300 mb-8">We've sent you an email with all the details.</p>
+                    <button
+                      onClick={() => navigate('/orders')}
+                      className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      View Orders
+                    </button>
                   </div>
-                </div>
-              </form>
-            </div>
-          </div>
-          
-          <div className="mt-10 lg:mt-0">
-            <h2 className="text-lg font-medium text-gray-900 mb-6">Order summary</h2>
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="space-y-4">
-                {items.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="h-full w-full object-cover object-center"
-                        />
-                      </div>
-                      <div className="ml-4">
-                        <h3 className="text-sm font-medium text-gray-900">{item.title}</h3>
-                        <p className="mt-1 text-sm text-gray-500">Qty {item.quantity}</p>
+                ) : (
+                  <>
+                    <div className="mb-8">
+                      <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Contact information</h2>
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Email address
+                          </label>
+                          <input
+                            type="email"
+                            id="email-address"
+                            name="email-address"
+                            autoComplete="email"
+                            className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                            required
+                          />
+                        </div>
                       </div>
                     </div>
-                    <p className="text-sm font-medium text-gray-900">${(item.price * item.quantity).toFixed(2)}</p>
-                  </div>
-                ))}
+
+                    <div className="mb-8">
+                      <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Payment method</h2>
+                      <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <div className="flex items-center mb-4">
+                          <input
+                            id="paypal"
+                            name="payment-method"
+                            type="radio"
+                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                            defaultChecked
+                          />
+                          <label htmlFor="paypal" className="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            PayPal
+                          </label>
+                        </div>
+                        <div className="mt-4">
+                          {paypalError ? (
+                            <div className="text-red-500 text-sm">
+                              Error loading PayPal. Please refresh the page or try again later.
+                            </div>
+                          ) : !sdkReady ? (
+                            <div className="flex justify-center items-center py-4">
+                              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+                            </div>
+                          ) : (
+                            <PayPalButtons
+                              style={{ layout: "vertical" }}
+                              createOrder={(data, actions) => {
+                                return actions.order.create({
+                                  purchase_units: [
+                                    {
+                                      amount: {
+                                        value: totalAmount.toFixed(2),
+                                        currency_code: 'USD'
+                                      },
+                                    },
+                                  ],
+                                });
+                              }}
+                              onApprove={async (data, actions) => {
+                                try {
+                                  const details = await actions.order.capture();
+                                  handleOrderSuccess(details);
+                                } catch (error) {
+                                  console.error('Payment error:', error);
+                                  toast.error('Payment processing failed. Please try again.');
+                                }
+                              }}
+                              onError={(err) => {
+                                console.error('PayPal error:', err);
+                                setPaypalError(true);
+                                toast.error('Failed to process payment. Please try again.');
+                              }}
+                              onCancel={() => {
+                                console.log('Payment cancelled');
+                                toast('Payment was cancelled', { icon: 'ℹ️' });
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-              
-              <div className="mt-6 border-t border-gray-200 pt-6">
-                <div className="flex items-center justify-between text-base font-medium text-gray-900">
-                  <p>Subtotal</p>
-                  <p>${totalAmount.toFixed(2)}</p>
-                </div>
-                <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
-                
-                <div className="mt-6">
-                  <button
-                    type="submit"
-                    className="w-full flex justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
-                  >
-                    Pay Now
-                  </button>
-                </div>
-                
-                <div className="mt-6 flex justify-center text-sm text-center text-gray-500">
-                  <p>
+            </div>
+
+            {/* Order Summary */}
+            <div className="md:col-span-1">
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h2 className="text-xl font-semibold mb-6 dark:text-white">Order Summary</h2>
+                <div className="space-y-4">
+                  {items.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <img 
+                          src={item.image} 
+                          alt={item.name}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                        <div className="ml-4">
+                          <h3 className="font-medium dark:text-gray-200">{item.name}</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Qty: {item.quantity}</p>
+                        </div>
+                      </div>
+                      <p className="font-medium dark:text-gray-200">${(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                  ))}
+                  
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                    <div className="flex justify-between py-2">
+                      <span className="dark:text-gray-300">Subtotal</span>
+                      <span className="dark:text-gray-300">${totalAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between py-2">
+                      <span className="dark:text-gray-300">Shipping</span>
+                      <span className="text-green-600 dark:text-green-400">Free</span>
+                    </div>
+                    <div className="flex justify-between py-2 font-semibold text-lg">
+                      <span className="dark:text-white">Total</span>
+                      <span className="dark:text-white">${totalAmount.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <p className="mt-4 text-center">
                     or{' '}
                     <button
                       type="button"
-                      className="font-medium text-indigo-600 hover:text-indigo-500"
+                      className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
                       onClick={() => navigate('/')}
                     >
                       Continue Shopping<span aria-hidden="true"> &rarr;</span>

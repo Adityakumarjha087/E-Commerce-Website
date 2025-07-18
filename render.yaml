@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: shopkart-backend
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node src/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        value: your_mongodb_uri_here
+      - key: PAYPAL_CLIENT_ID
+        value: ${PAYPAL_CLIENT_ID}
+      - key: PAYPAL_CLIENT_SECRET
+        value: ${PAYPAL_CLIENT_SECRET}
+      - key: JWT_SECRET
+        value: ${JWT_SECRET}
+    plan: free
+    region: oregon
+    autoDeploy: true

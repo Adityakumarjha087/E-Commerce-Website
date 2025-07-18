@@ -12,7 +12,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "https://e-commerce-backend-website.onrender.com/api/$1",
+      "dest": "https://shopkart-backend.onrender.com/api/$1",
       "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     },
     {
